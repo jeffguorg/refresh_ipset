@@ -12,7 +12,7 @@ if [ -r ${ZONE_FILE} ]; then
     TIMESTAMP="$(stat -c %y ${ZONE_FILE})"
 fi
 
-wget -N ${IPDENY_URL} &> /dev/null
+wget -N ${IPSET_URL} &> /dev/null
 
 # exit if file not changed when needed
 
@@ -22,8 +22,8 @@ ipset create ${ZONE}-swap hash:net &> /dev/null || ipset flush ${ZONE}-swap
 
 LINES=$(cat "${ZONE_FILE}" | wc -l)
 cat "${ZONE_FILE}" -n | while read n block; do
-    ipset add ${ZONE}-swap ${block}
-done
+    echo add ${ZONE}-swap ${block}
+done | ipset restore
 
 ipset swap ${ZONE} ${ZONE}-swap
 ipset destroy ${ZONE}-swap
