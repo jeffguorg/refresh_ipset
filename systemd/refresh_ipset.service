@@ -1,0 +1,11 @@
+[Unit]
+Description=create or refresh ipset cn
+Before=iptables.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/refresh_ipset
+
+[Install]
+WantedBy=basic.target

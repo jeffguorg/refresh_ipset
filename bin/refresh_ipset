@@ -1,0 +1,30 @@
+#!/bin/bash
+
+ZONE="${ZONE:-cn}"
+ZONE_FILE="${ZONE_FILE:-${ZONE}-aggregated.zone}"
+BASE_URL="${BASE_URL:-http://www.ipdeny.com/ipblocks/data/aggregated}"
+IPSET_URL="${BASE_URL}/${ZONE_FILE}"
+
+mkdir -p /var/cache/ipblock
+cd /var/cache/ipblock
+
+if [ -r ${ZONE_FILE} ]; then
+    TIMESTAMP="$(stat -c %y ${ZONE_FILE})"
+fi
+
+wget -N ${IPDENY_URL} &> /dev/null
+
+# exit if file not changed when needed
+
+# don't care about if it exists before
+ipset create ${ZONE} hash:net &> /dev/null
+ipset create ${ZONE}-swap hash:net &> /dev/null || ipset flush ${ZONE}-swap
+
+LINES=$(cat "${ZONE_FILE}" | wc -l)
+cat "${ZONE_FILE}" -n | while read n block; do
+    ipset add ${ZONE}-swap ${block}
+done
+
+ipset swap ${ZONE} ${ZONE}-swap
+ipset destroy ${ZONE}-swap
+
